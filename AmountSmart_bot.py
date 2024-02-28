@@ -7,12 +7,17 @@ from telebot import types
 import threading
 
 
-TOKEN = 'YOUR_TOKEN'
+TOKEN = 'ТУТ ВСТАВЬТЕ ВАШ ТОКЕН Telegram Bot'
 bot = telebot.TeleBot(TOKEN)
 
 url_1 = "https://smart-pilka.ru/catalog/professionalnaya_kosmetika/multi_pasta_smart_15ml.html"
 url_2 = "https://smart-pilka.ru/catalog/professionalnaya_kosmetika/multi_pasta_smart_150_ml.html"
+url_3 = "https://smart-pilka.ru/catalog/professionalnaya_kosmetika/umnyy_balzam_dlya_bystrogo_vosstanovleniya_kozhi_15ml.html"
+url_4 = "https://smart-pilka.ru/catalog/professionalnaya_kosmetika/umnyy_balzam_dlya_bystrogo_vosstanovleniya_kozhi_150_ml.html"
+
 url_test = "https://smart-pilka.ru/catalog/professionalnaya_kosmetika/umnyy_eliksir_dlya_vosstanovleniya_volos_kozhi_golovy_brovey_i_resnits_30_ml.html"
+
+print("Бот запущен и готов к работе! 🤖")
 
 def start_check(url):
     res = requests.get(url)
@@ -23,16 +28,16 @@ def start_check(url):
     for div in divs_availability:
         answer = div.text.strip()
         if answer == result:
-            return "Пасты в наличии нет. =("
+            return "Пасты в наличии нет =("
         else:
             divs_price = soup.find_all('div', class_='qtyBlockContainer')
             for price in divs_price:
                 input_tag = price.find('input', class_='qty')
                 data_max_quantity = input_tag.get('data-max-quantity')
-                return f"Паста появилась в наличии ^_^\nНа данный момент количество {data_max_quantity} штук."
+                return f"Товар появился в наличии ^_^\nНа данный момент количество {data_max_quantity} штук."
         break
 
-answer = "Пасты в наличии нет. =("
+answer = "Пасты в наличии нет =("
 
 
 @bot.message_handler(commands=['start'])
@@ -48,13 +53,21 @@ def start(message):
 
     row3 = []
     row4 = []
-    check_button_start_small(row3)
-    check_button_start_big(row4)
+    check_button_start_small_pasta(row3)
+    check_button_start_big_pasta(row4)
     markup.add(*row3, *row4)
-    
-    check_button_start_two(markup)
-    
-    bot.send_message(message.chat.id, "Привет! Я бот для проверки наличия товаров.", reply_markup=markup)
+
+    row5 = []
+    row6 = []
+    check_button_start_small_balzam(row5)
+    check_button_start_big_balzam(row6)
+    markup.add(*row5, *row6)
+
+    check_button_start_two_pasta(markup)
+
+    check_button_start_two_balzam(markup)
+
+    bot.send_message(message.chat.id, "Привет! Я бот для проверки наличия товаров Smart Master 🤖", reply_markup=markup)
 
 # ниже идёт код для кнопок бота
 def button_help(markup):
@@ -66,141 +79,175 @@ def stop_check(markup):
     markup.add(stop_check_button)
 
 def check_button(markup):
-    check_button = types.KeyboardButton("🤔 Наличие")
+    check_button = types.KeyboardButton("🕵️‍♂️ Наличие")
     markup.append(check_button)
 
-def check_button_start_small(markup):
-    start_button_small = types.KeyboardButton("🤏🏻 Запуск 15мл", request_contact=False, request_location=False)
-    markup.append(start_button_small)
+def check_button_start_small_pasta(markup):
+    start_button_small_pasta = types.KeyboardButton("🤏 Паста 15мл", request_contact=False, request_location=False)
+    markup.append(start_button_small_pasta)
 
-def check_button_start_big(markup):
-    start_button_big = types.KeyboardButton("💪 Запуск 150мл", request_contact=False, request_location=False)
-    markup.append(start_button_big)
+def check_button_start_big_pasta(markup):
+    start_button_big_pasta = types.KeyboardButton("💪 Паста 150мл", request_contact=False, request_location=False)
+    markup.append(start_button_big_pasta)
 
-def check_button_start_two(markup):
-    start_button_two = types.KeyboardButton("🗽 Запуск пасты 150мл и 15мл", request_contact=False, request_location=False)
-    markup.add(start_button_two)
+def check_button_start_small_balzam(markup):
+    start_button_small_balzam = types.KeyboardButton("🤏🏽 Бальзам 15мл", request_contact=False, request_location=False)
+    markup.append(start_button_small_balzam)
 
-# глобальные переменные
+def check_button_start_big_balzam(markup):
+    start_button_big_balzam = types.KeyboardButton("💪🏽 Бальзам 150мл", request_contact=False, request_location=False)
+    markup.append(start_button_big_balzam)
+
+def check_button_start_two_pasta(markup):
+    start_button_two_pasta = types.KeyboardButton("🌓 Пасты 15мл и 150мл", request_contact=False, request_location=False)
+    markup.add(start_button_two_pasta)
+
+def check_button_start_two_balzam(markup):
+    start_button_two_balzam = types.KeyboardButton("🌗 Бальзамы 15мл и 150мл", request_contact=False, request_location=False)
+    markup.add(start_button_two_balzam)
+
+# глобальные переменные - флаги
 stop_parsing_flag = False
-is_checking_small = False
-is_checking_big = False
-is_checking_two = False
+is_checking_small_pasta = False
+is_checking_big_pasta = False
+is_checking_two_pasta = False
+is_checking_small_balzam = False
+is_checking_big_balzam = False
+is_checking_two_balzam = False
 timer = None
-timer_sleep = 3
+timer_sleep = 300
 
-# ниже идёт код для логики бота
+# ниже идут кнопки для бота
 @bot.message_handler(func=lambda message: message.text == "❓ Помощь")
 def help(message):
     bot.send_message(message.chat.id, f"""
-                    ❓ ***Помощь*** - вызов справки\n\n📛 ***Остановить*** - остановка вообще _всех_ парсингов.\n\n🤔 ***Наличие*** - проверка наличия товара на текущий момент.\n\n🤏🏻 ***Запуск 15мл*** - запуск автоматической проверки на наличие товара _маленькой_ пасты.\n\n💪 ***Запуск 150мл*** - запуск автоматической проверки на наличие товара _большой_ пасты.\n\n🗽 **Запуск пасты 150мл и 15мл** - запуск автоматической проверки на наличие товара и _большой_ и _маленькой_ паст.\n\n⚠️**ВНИМАНИЕ!**⚠️ Работать одновременно может только _один_ парсинг из трёх! Перед запуском другого парсинга, необходимо кнопкой *остановить* работу других. """, parse_mode= "Markdown")
+                    ❓ ***Помощь*** - вызов справки 👻\n\n📛 ***Остановить*** - остановка вообще _всех_ парсингов.\n\n🕵️‍♂️ ***Наличие*** - проверка наличия товара на текущий момент.\n\n🤏 ***Паста 15мл*** - запуск автоматической проверки на наличие товара _маленькой_ пасты.\n\n💪 ***Паста 150мл*** - запуск автоматической проверки на наличие товара _большой_ пасты.\n\n🌓 **Пасты 15мл и 150мл** - запуск автоматической проверки на наличие товара и _большой_ и _маленькой_ паст.\n\n🤏🏽 ***Бальзам 15мл*** - запуск автоматической проверки на наличие товара _маленького_ бальзама.\n\n💪🏽 ***Бальзам 150мл*** - запуск автоматической проверки на наличие товара _большого_ бальзама.\n\n🌗 **Бальзамы 15мл и 150мл** - запуск автоматической проверки на наличие товара и _большого_ и _маленького_ бальзама.\n\n⚠️**ВНИМАНИЕ!**⚠️ Работать одновременно может только _один_ парсинг из всех! Перед запуском другого парсинга, необходимо кнопкой *остановить* работу действующих парсингов и дождаться ответа от Фиксиков 👾 =)""", parse_mode= "Markdown")
 
 @bot.message_handler(func=lambda message: message.text == "📛 Остановить")
 def stop_parsing(message):
-    global stop_parsing_flag, is_checking_big, is_checking_small, is_checking_two, timer
+    global stop_parsing_flag, is_checking_big_pasta, is_checking_small_pasta, is_checking_two_pasta, timer, is_checking_big_balzam, is_checking_small_balzam, is_checking_two_balzam
     stop_parsing_flag = True
-    is_checking_small = False
-    is_checking_big = False
-    is_checking_two = False
+    is_checking_small_pasta = False
+    is_checking_big_pasta = False
+    is_checking_two_pasta = False
+    is_checking_small_balzam = False
+    is_checking_big_balzam = False
+    is_checking_two_balzam = False
     bot.send_message(message.chat.id, f"Немного терпения!🍿\nФиксикам надо остановить все работы и убрать рабочее место!🧘‍♂️🧘‍♀️\n\nПридёт уведомление когда можно начать новый парсинг.....⏳")
     if timer:
         timer.join()  # Дождаться завершения потока
         timer = None
-    bot.send_message(message.chat.id, f"Весь парсинг был успешно остановлен!✅\nСпасибо за ожидание!🍨")
+    bot.send_message(message.chat.id, f"Весь парсинг был успешно остановлен!✅\nСпасибо за ожидание!🍨\nФиксики ждут новых заданий!🧟🧟‍♀️🧟‍♂️")
 
 
-@bot.message_handler(func=lambda message: message.text == "🤔 Наличие")
+@bot.message_handler(func=lambda message: message.text == "🕵️‍♂️ Наличие")
 def one_check(message):
         availability_1 = start_check(url_1)
         availability_2 = start_check(url_2)
-        bot.send_message(message.chat.id, f"Состояние товаров:\n\n{availability_1}\nэто Смарт Паста 15мл: {url_1}\n\n\n{availability_2}\nэто Смарт Паста 150мл: {url_2}")
+        availability_3 = start_check(url_3)
+        availability_4 = start_check(url_4)
+        bot.send_message(message.chat.id, f"Состояние товаров:\n\n{availability_1}\nэто Смарт Паста 15мл: {url_1}\n\n\n{availability_2}\nэто Смарт Паста 150мл: {url_2}\n\n\n{availability_3}\nэто Смарт Бальзам 15мл: {url_3}\n\n\n{availability_4}\nэто Смарт Бальзам 150мл: {url_4}")
 
-@bot.message_handler(func=lambda message: message.text == "🤏🏻 Запуск 15мл")
-def check_products_small(message):
-    global stop_parsing_flag, is_checking_big, is_checking_small, is_checking_two, timer
-    if is_checking_small:
-        bot.send_message(message.chat.id, "Парсинг пасты 15мл уже запущен.")
+# дальше логика бота.
+# избавимся от дублирования, указание какой парсинг уже запущен.
+def check_products_parsing_status(message):
+    status_messages = {
+        "is_checking_small_pasta": "Парсинг пасты 15мл уже запущен.",
+        "is_checking_big_pasta": "Парсинг пасты 150мл уже запущен.",
+        "is_checking_two_pasta": "Парсинг пасты 15мл и 150мл уже запущен.",
+        "is_checking_small_balzam": "Парсинг бальзама 15мл уже запущен.",
+        "is_checking_big_balzam": "Парсинг бальзама 150мл уже запущен.",
+        "is_checking_two_balzam": "Парсинг бальзама 15мл и 150мл уже запущен."
+    }
+    for product_type, status_message in status_messages.items():
+        if globals()[f'{product_type}']:
+            bot.send_message(message.chat.id, status_message)
+            return False
+    return True
+
+# общая функция запуска парсинга
+@bot.message_handler(func=lambda message: message.text in ["🤏 Паста 15мл", "💪 Паста 150мл", "🤏🏽 Бальзам 15мл", "💪🏽 Бальзам 150мл"])
+def check_products_pasta_handler(message):
+    product_types = {
+        "🤏 Паста 15мл": ("small_pasta", "пасты 15мл", url_1),
+        "💪 Паста 150мл": ("big_pasta", "пасты 150мл", url_2),
+        "🤏🏽 Бальзам 15мл": ("small_balzam", "бальзама 15мл", url_3),
+        "💪🏽 Бальзам 150мл": ("big_balzam", "бальзама 150мл", url_4),
+    }
+    product_type, product_name, url = product_types.get(message.text)
+    print(message.text)
+    check_products_pasta(message, product_type, product_name, url)
+
+def check_products_pasta(message, product_type, product_name, url):
+    global stop_parsing_flag, is_checking_big_pasta, is_checking_small_pasta, is_checking_two_pasta, timer, is_checking_big_balzam, is_checking_small_balzam, is_checking_two_balzam
+
+    if not check_products_parsing_status(message):
         return
-    elif is_checking_big:
-        bot.send_message(message.chat.id, "Парсинг пасты 150мл уже запущен.")
-        return
-    elif is_checking_two:
-        bot.send_message(message.chat.id, "Парсинг пасты 15мл и 150мл уже запущен.")
-        return
-    else:
-        bot.send_message(message.chat.id, f"Запустился парсинг пасты 15мл.")
-    is_checking_small = True
+
+    bot.send_message(message.chat.id, f"Запустился парсинг {product_name}.")
+    globals()[f'is_checking_{product_type}'] = True
     stop_parsing_flag = False
-    def parsing_loop1():
+
+    def parsing_loop():
         while not stop_parsing_flag:
             time.sleep(timer_sleep)
-            availability_1 = start_check(url_1)
-            if availability_1 == answer:
-                # pass
-                bot.send_message(message.chat.id, f"test 15")
+            availability = start_check(url)
+            if availability == answer:
+                pass
+                # bot.send_message(message.chat.id, f"test {product_name}")
             else:
-                bot.send_message(message.chat.id, f"Состояние товара:\n\n{availability_1}\nэто Смарт Паста 15мл: {url_1}")
+                bot.send_message(message.chat.id, f"Состояние товара:\n\n{availability}\nэто {product_name}: {url}")
                 break
-    timer = threading.Thread(target=parsing_loop1)
+
+    timer = threading.Thread(target=parsing_loop)
     timer.start()
 
-@bot.message_handler(func=lambda message: message.text == "💪 Запуск 150мл")
-def check_products_big(message):
-    global stop_parsing_flag, is_checking_big, is_checking_small, is_checking_two, timer
-    if is_checking_big:
-        bot.send_message(message.chat.id, "Парсинг пасты 150мл уже запущен.")
-        return
-    elif is_checking_small:
-        bot.send_message(message.chat.id, "Парсинг пасты 15мл уже запущен.")
-        return
-    elif is_checking_two:
-        bot.send_message(message.chat.id, "Парсинг пасты 15мл и 150мл уже запущен.")
-        return
-    else:
-        bot.send_message(message.chat.id, f"Запустился парсинг пасты 150мл.")
-    is_checking_big = True
-    stop_parsing_flag = False
-    def parsing_loop2():
-        while not stop_parsing_flag:
-            time.sleep(timer_sleep)
-            availability_2 = start_check(url_2)
-            if availability_2 == answer:
-                # pass
-                bot.send_message(message.chat.id, f"test 150")
-            else:
-                bot.send_message(message.chat.id, f"Состояние товаров:\n\n{availability_2}\nэто Смарт Паста 150мл: {url_2}")
-                break
-    timer = threading.Thread(target=parsing_loop2)
-    timer.start()
 
-@bot.message_handler(func=lambda message: message.text == "🗽 Запуск пасты 150мл и 15мл")
-def check_products_two(message):
-    global stop_parsing_flag, is_checking_big, is_checking_small, is_checking_two, timer
-    if is_checking_two:
-        bot.send_message(message.chat.id, "Парсинг паст 15мл и 150мл уже запущен.")
+@bot.message_handler(func=lambda message: message.text == "🌓 Пасты 15мл и 150мл")
+def check_products_two_pasta(message):
+    global stop_parsing_flag, is_checking_big_pasta, is_checking_small_pasta, is_checking_two_pasta, timer, is_checking_big_balzam, is_checking_small_balzam, is_checking_two_balzam
+    if not check_products_parsing_status(message):
         return
-    elif is_checking_small:
-        bot.send_message(message.chat.id, "Парсинг пасты 15мл уже запущен.")
-        return
-    elif is_checking_big:
-        bot.send_message(message.chat.id, "Парсинг пасты 150мл уже запущен.")
-        return
-    else:
-        bot.send_message(message.chat.id, f"Запустился парсинг паст 150мл и 15мл.")
-    is_checking_two = True
+
+    bot.send_message(message.chat.id, f"Запустился парсинг паст 15мл и 150мл.")
+    is_checking_two_pasta = True
     stop_parsing_flag = False
-    def parsing_loop3():
+    def parsing_loop():
         while not stop_parsing_flag:
             time.sleep(timer_sleep)
             availability_1 = start_check(url_1)
             availability_2 = start_check(url_2)
-            if availability_1 == answer or availability_2 == answer:
-                # pass
-                bot.send_message(message.chat.id, f"test 15 and 150")
-            else:
-                bot.send_message(message.chat.id, f"Состояние товаров:\n\n{availability_1}\nэто Смарт Паста 15мл: {url_2}\n\n\n{availability_2}\nэто Смарт Паста 150мл: {url_2}")
+            if availability_1 != answer or availability_2 != answer:
+                bot.send_message(message.chat.id, f"Состояние товаров:\n\n{availability_1}\nэто Смарт Паста 15мл: {url_1}\n\n\n{availability_2}\nэто Смарт Паста 150мл: {url_2}")
                 break
-    timer = threading.Thread(target=parsing_loop3)
+            else:
+                pass
+                # bot.send_message(message.chat.id, f"test 15 and 150 pasta")
+    timer = threading.Thread(target=parsing_loop)
+    timer.start()
+
+
+@bot.message_handler(func=lambda message: message.text == "🌗 Бальзамы 15мл и 150мл")
+def check_products_two_balzam(message):
+    global stop_parsing_flag, is_checking_big_pasta, is_checking_small_pasta, is_checking_two_pasta, timer, is_checking_big_balzam, is_checking_small_balzam, is_checking_two_balzam
+    if not check_products_parsing_status(message):
+        return
+
+    bot.send_message(message.chat.id, f"Запустился парсинг бальзамов 15мл и 150мл.")
+    is_checking_two_balzam = True
+    stop_parsing_flag = False
+    def parsing_loop():
+        while not stop_parsing_flag:
+            time.sleep(timer_sleep)
+            availability_1 = start_check(url_3)
+            availability_2 = start_check(url_4)
+            if availability_1 != answer or availability_2 != answer:
+                bot.send_message(message.chat.id, f"Состояние товаров:\n\n{availability_1}\nэто Смарт Бальзам 15мл: {url_3}\n\n\n{availability_2}\nэто Смарт Бальзам 150мл: {url_4}")
+                break
+            else:
+                pass
+                # bot.send_message(message.chat.id, f"test 15 and 150 balzam")
+    timer = threading.Thread(target=parsing_loop)
     timer.start()
 
 bot.polling()
