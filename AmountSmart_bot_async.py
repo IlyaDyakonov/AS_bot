@@ -16,7 +16,7 @@ dp = Dispatcher()
 
 url_1 = "https://smart-pilka.ru/catalog/professionalnaya_kosmetika/multi_pasta_smart_15ml.html"
 url_2 = "https://smart-pilka.ru/catalog/professionalnaya_kosmetika/multi_pasta_smart_150_ml.html"
-url_3 = "https://smart-pilka.ru/catalog/professionalnaya_kosmetika/umnyy_balzam_dlya_bystrogo_vosstanovleniya_kozhi_15ml.html"
+url_3 = "https://smart-pilka.ru/catalog/professionalnaya_kosmetika/lechebnoe_maslo_smart_organic_oil_30_ml.html"
 url_4 = "https://smart-pilka.ru/catalog/professionalnaya_kosmetika/umnyy_balzam_dlya_bystrogo_vosstanovleniya_kozhi_150_ml.html"
 
 url_test = "https://smart-pilka.ru/catalog/professionalnaya_kosmetika/umnyy_eliksir_dlya_vosstanovleniya_volos_kozhi_golovy_brovey_i_resnits_30_ml.html"
@@ -61,7 +61,7 @@ def create_keyboard():
             InlineKeyboardButton(text="💪 Паста 150мл", callback_data='big_pasta')
         ],
         [
-            InlineKeyboardButton(text="🍼 Бальзам 15мл", callback_data='small_balzam'),
+            InlineKeyboardButton(text="🍼 Масло 30мл", callback_data='small_balzam'),
             InlineKeyboardButton(text="🍷 Бальзам 150мл", callback_data='big_balzam')
         ],
     ])
@@ -103,7 +103,7 @@ async def process_check_products_handler2(call: CallbackQuery):
     await check_products_big_pasta(call.message)
     await call.answer()
 
-    # кнопка 🍼 Бальзам 15мл
+    # кнопка 🍼 Масло 30мл
 @dp.callback_query(lambda query: query.data == 'small_balzam')
 async def process_check_products_handler3(call: CallbackQuery):
     await check_products_small_balzam(call.message)
@@ -138,7 +138,7 @@ async def help_command(message: Message):
                     f"📛 ***Остановить Фиксиков)*** - остановка вообще _ВСЕХ_ парсингов.\n\n"
                     f"🤏 ***Паста 15мл*** - запуск автоматической проверки на наличие товара _маленькой_ пасты.\n\n"
                     f"💪 ***Паста 150мл*** - запуск автоматической проверки на наличие товара _большой_ пасты.\n\n"
-                    f"🍼 ***Бальзам 15мл*** - запуск автоматической проверки на наличие товара _маленького_ бальзама.\n\n"
+                    f"🍼 ***Масло 30мл*** - запуск автоматической проверки на наличие товара _маленького_ бальзама.\n\n"
                     f"🍷 ***Бальзам 150мл*** - запуск автоматической проверки на наличие товара _большого_ бальзама.\n\n"
                     f"⚠️**ВНИМАНИЕ!**⚠️ Работать могут _любые_ комбинации парсингов одновременно! Если Вам надо остановить работу парсингов, или отключить какой либо из них, необходимо кнопкой ***Остановить*** работу _ВСЕХ_ действующих парсингов и дождаться ответа от Фиксиков, а затем запускать нужные парсеры 👾 =)", parse_mode= "Markdown", reply_markup=markup)
 
@@ -153,8 +153,9 @@ async def one_check(message: Message):
     availability_4 = await start_check(url_4)
     await message.answer(f"Состояние товаров:\n\n{availability_1}\nэто Смарт Паста 15мл: {url_1}\n\n\n"
                         f"{availability_2}\nэто Смарт Паста 150мл: {url_2}\n\n\n"
-                        f"{availability_3}\nэто Смарт Бальзам 15мл: {url_3}\n\n\n"
-                        f"{availability_4}\nэто Смарт Бальзам 150мл: {url_4}", reply_markup=markup)
+                        f"{availability_3}\nэто Смарт Масло 30мл: {url_3}\n\n\n"
+                        f"{availability_4}\nэто Смарт Бальзам 150мл: {url_4}",
+                        reply_markup=markup)
 
 # словарь с содержимым запросов пользователей бота
 user_states = {}
@@ -164,43 +165,47 @@ user_states = {}
 async def stop_parsing(message: Message):
     chat_id = message.chat.id
     for user_id in user_states:
-        if ('stop_pars_small_pasta' in user_states[user_id] and user_states[user_id]['stop_pars_small_pasta'] == True) and ('stop_pars_big_pasta' in user_states[user_id] and user_states[user_id]['stop_pars_big_pasta'] == True) and ('stop_pars_small_balzam' in user_states[user_id] and user_states[user_id]['stop_pars_small_balzam'] == True) and ('stop_pars_big_balzam' in user_states[user_id] and user_states[user_id]['stop_pars_big_balzam'] == True):
-            await message.answer(f"Фиксики отдыхают 😸")
-            break
-        try:
-            if chat_id in user_states:
-                user_states[chat_id]['stop_pars_small_pasta'] = True
-                user_states[chat_id]['stop_pars_big_pasta'] = True
-                user_states[chat_id]['stop_pars_small_balzam'] = True
-                user_states[chat_id]['stop_pars_big_balzam'] = True
-            else:
-                user_states[chat_id] = {'stop_pars_small_pasta': True}
-                user_states[chat_id] = {'stop_pars_big_pasta': True}
-                user_states[chat_id] = {'stop_pars_small_balzam': True}
-                user_states[chat_id] = {'stop_pars_big_balzam': True}
-            await message.answer(f"Немного терпения!🍿\nФиксикам надо остановить все работы и убрать рабочее место!🧘‍♂️🧘‍♀️\n\nПридёт уведомление когда парсинг определённого товара будет остановлен......⏳")
-        except aiogram.exceptions.TelegramBadRequest as e:
-            if "TelegramBadRequest" in str(e) or "aiogram.exceptions.TelegramBadRequest" in str(e):
-                pass
-            else:
-                print("Неопознанные ошибки")
+        if user_id == chat_id:
+            if ('stop_pars_small_pasta' in user_states[user_id] and user_states[user_id]['stop_pars_small_pasta'] == True) and ('stop_pars_big_pasta' in user_states[user_id] and user_states[user_id]['stop_pars_big_pasta'] == True) and ('stop_pars_small_oil' in user_states[user_id] and user_states[user_id]['stop_pars_small_oil'] == True) and ('stop_pars_big_balzam' in user_states[user_id] and user_states[user_id]['stop_pars_big_balzam'] == True):
+                await message.answer(f"Фиксики отдыхают 😸")
+                break
+            try:
+                if chat_id in user_states:
+                    user_states[chat_id]['stop_pars_small_pasta'] = True
+                    user_states[chat_id]['stop_pars_big_pasta'] = True
+                    user_states[chat_id]['stop_pars_small_oil'] = True
+                    user_states[chat_id]['stop_pars_big_balzam'] = True
+                else:
+                    user_states[chat_id] = {'stop_pars_small_pasta': True}
+                    user_states[chat_id] = {'stop_pars_big_pasta': True}
+                    user_states[chat_id] = {'stop_pars_small_oil': True}
+                    user_states[chat_id] = {'stop_pars_big_balzam': True}
+                await message.answer(f"Немного терпения!🍿\nФиксикам надо остановить все работы и убрать рабочее место!🧘‍♂️🧘‍♀️\n\nПридёт уведомление когда парсинг определённого товара будет остановлен......⏳")
+            except aiogram.exceptions.TelegramBadRequest as e:
+                if "TelegramBadRequest" in str(e) or "aiogram.exceptions.TelegramBadRequest" in str(e):
+                    pass
+                else:
+                    print("Неопознанные ошибки")
 
 # смотрим какие парсеры сейчас работают
 @dp.message()
 async def print_active_parser(message: Message):
     active_functions = []
+    chat_id = message.chat.id
+
     for user_id in user_states:
-        if 'stop_pars_small_pasta' in user_states[user_id] and user_states[user_id]['stop_pars_small_pasta'] == False:
-            active_functions.append('Запущенна проверка 🤏 Смарт Пасты 15мл')
+        if user_id == chat_id:
+            if 'stop_pars_small_pasta' in user_states[user_id] and user_states[user_id]['stop_pars_small_pasta'] == False:
+                active_functions.append('Запущенна проверка 🤏 Смарт Пасты 15мл')
 
-        if 'stop_pars_big_pasta' in user_states[user_id] and user_states[user_id]['stop_pars_big_pasta'] == False:
-            active_functions.append('Запущенна проверка 💪 Смарт Пасты 150мл')
+            if 'stop_pars_big_pasta' in user_states[user_id] and user_states[user_id]['stop_pars_big_pasta'] == False:
+                active_functions.append('Запущенна проверка 💪 Смарт Пасты 150мл')
 
-        if 'stop_pars_small_balzam' in user_states[user_id] and user_states[user_id]['stop_pars_small_balzam'] == False:
-            active_functions.append('Запущенна проверка 🍼Смарт Бальзама 15мл')
+            if 'stop_pars_small_oil' in user_states[user_id] and user_states[user_id]['stop_pars_small_oil'] == False:
+                active_functions.append('Запущенна проверка 🍼Смарт Масла 30мл')
 
-        if 'stop_pars_big_balzam' in user_states[user_id] and user_states[user_id]['stop_pars_big_balzam'] == False:
-            active_functions.append('Запущенна проверка 🍷Смарт Бальзама 150мл')
+            if 'stop_pars_big_balzam' in user_states[user_id] and user_states[user_id]['stop_pars_big_balzam'] == False:
+                active_functions.append('Запущенна проверка 🍷Смарт Бальзама 150мл')
 
     if active_functions:
         active_functions_text = "\n".join(active_functions)
@@ -221,7 +226,6 @@ async def check_products_small_pasta(message: Message):
             user_states[chat_id]['stop_pars_small_pasta'] = False
         else:
             user_states[chat_id] = {'stop_pars_small_pasta': False}
-        print(user_states)
         await message.answer(f'Парсинг ***Смарт Пасты 15мл*** запущен!', parse_mode= "Markdown")
         while True:
             try:
@@ -232,7 +236,8 @@ async def check_products_small_pasta(message: Message):
                     await asyncio.sleep(timer_sleep)
                     availability_1 = await start_check(url_1)
                     if availability_1 == answer:
-                        await message.answer(f'pasta test 15')
+                        # await message.answer(f'pasta test 15')
+                        pass
                     else:
                         await message.answer(f'Состояние товаров:\n\n{availability_1}\nэто Смарт Паста 150мл: {url_1}', reply_markup=markup)
                         user_states[chat_id]['stop_pars_small_pasta'] = True
@@ -257,7 +262,6 @@ async def check_products_big_pasta(message: Message):
             user_states[chat_id]['stop_pars_big_pasta'] = False
         else:
             user_states[chat_id] = {'stop_pars_big_pasta': False}
-        print(user_states)
         await message.answer(f'Парсинг ***Смарт Пасты 150мл*** запущен!', parse_mode= "Markdown")
         while True:
             try:
@@ -287,29 +291,28 @@ async def check_products_small_balzam(message: Message):
     markup = create_keyboard()
     chat_id = message.chat.id
 
-    if chat_id in user_states and 'stop_pars_small_balzam' in user_states[chat_id] and not user_states[chat_id]['stop_pars_small_balzam']:
-        await message.answer(f'Парсер 💪 ***Смарт Бальзама 15мл*** _уже выполняется_!', parse_mode= "Markdown")
+    if chat_id in user_states and 'stop_pars_small_oil' in user_states[chat_id] and not user_states[chat_id]['stop_pars_small_oil']:
+        await message.answer(f'Парсер 💪 ***Смарт Масла 30мл*** _уже выполняется_!', parse_mode= "Markdown")
     else:
         if chat_id in user_states:
-            user_states[chat_id]['stop_pars_small_balzam'] = False
+            user_states[chat_id]['stop_pars_small_oil'] = False
         else:
-            user_states[chat_id] = {'stop_pars_small_balzam': False}
-        print(user_states)
-        await message.answer(f'Парсинг ***Смарт Бальзама 15мл*** запущен!', parse_mode= "Markdown")
+            user_states[chat_id] = {'stop_pars_small_oil': False}
+        await message.answer(f'Парсинг ***Смарт Масла 30мл*** запущен!', parse_mode= "Markdown")
         while True:
             try:
-                if user_states[chat_id]['stop_pars_small_balzam']:
-                    await message.answer(f"Парсинг 🍼***Смарт Бальзама 15мл*** остановлен!✅\nФиксики ждут новых поручений!🧟🧟‍♀️🧟‍♂️", parse_mode= "Markdown", reply_markup=markup)
+                if user_states[chat_id]['stop_pars_small_oil']:
+                    await message.answer(f"Парсинг 🍼***Смарт Масла 30мл*** остановлен!✅\nФиксики ждут новых поручений!🧟🧟‍♀️🧟‍♂️", parse_mode= "Markdown", reply_markup=markup)
                     break
                 else:
                     await asyncio.sleep(timer_sleep)
                     availability_3 = await start_check(url_3)
                     if availability_3 == answer:
-                        # await message.answer(f'balzam test 15')
+                        # await message.answer(f'oil test 30')
                         pass
                     else:
                         await message.answer(f'Состояние товаров:\n\n{availability_3}\nэто Смарт Паста 150мл: {url_3}', reply_markup=markup)
-                        user_states[chat_id]['stop_pars_small_balzam'] = True
+                        user_states[chat_id]['stop_pars_small_oil'] = True
                         break
             except aiogram.exceptions.TelegramBadRequest as e:
                 if "TelegramBadRequest" in str(e) or "aiogram.exceptions.TelegramBadRequest" in str(e):
@@ -331,7 +334,6 @@ async def check_products_big_balzam(message: Message):
             user_states[chat_id]['stop_pars_big_balzam'] = False
         else:
             user_states[chat_id] = {'stop_pars_big_balzam': False}
-        print(user_states)
         await message.answer(f'Парсинг ***Смарт Бальзама 150мл*** запущен!', parse_mode= "Markdown")
         while True:
             try:
