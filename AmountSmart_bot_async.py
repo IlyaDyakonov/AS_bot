@@ -11,7 +11,7 @@ import logging
 import sys
 
 
-TOKEN = "ТУТ ВСТАВЬТЕ ВАШ ТОКЕН Telegram Bot"
+TOKEN = "ВВЕДИТЕ СЮДА ТОКЕН ТЕЛЕГРАММ БОТА"
 dp = Dispatcher()
 
 url_1 = "https://smart-pilka.ru/catalog/professionalnaya_kosmetika/multi_pasta_smart_15ml.html"
@@ -154,8 +154,7 @@ async def one_check(message: Message):
     await message.answer(f"Состояние товаров:\n\n{availability_1}\nэто Смарт Паста 15мл: {url_1}\n\n\n"
                         f"{availability_2}\nэто Смарт Паста 150мл: {url_2}\n\n\n"
                         f"{availability_3}\nэто Смарт Масло 30мл: {url_3}\n\n\n"
-                        f"{availability_4}\nэто Смарт Бальзам 150мл: {url_4}",
-                        reply_markup=markup)
+                        f"{availability_4}\nэто Смарт Бальзам 150мл: {url_4}", reply_markup=markup)
 
 # словарь с содержимым запросов пользователей бота
 user_states = {}
@@ -239,7 +238,7 @@ async def check_products_small_pasta(message: Message):
                         # await message.answer(f'pasta test 15')
                         pass
                     else:
-                        await message.answer(f'Состояние товаров:\n\n{availability_1}\nэто Смарт Паста 150мл: {url_1}', reply_markup=markup)
+                        await message.answer(f'Состояние товаров:\n\n{availability_1}\nэто Смарт Паста 15мл: {url_1}', reply_markup=markup)
                         user_states[chat_id]['stop_pars_small_pasta'] = True
                         break
             except aiogram.exceptions.TelegramBadRequest as e:
@@ -285,7 +284,7 @@ async def check_products_big_pasta(message: Message):
                     print("Неопознанные ошибки")
                     break
 
-# это кнопка small_balzam
+# это кнопка small_oil
 @dp.message()
 async def check_products_small_balzam(message: Message):
     markup = create_keyboard()
@@ -311,7 +310,7 @@ async def check_products_small_balzam(message: Message):
                         # await message.answer(f'oil test 30')
                         pass
                     else:
-                        await message.answer(f'Состояние товаров:\n\n{availability_3}\nэто Смарт Паста 150мл: {url_3}', reply_markup=markup)
+                        await message.answer(f'Состояние товаров:\n\n{availability_3}\nэто Смарт Масло 30мл: {url_3}', reply_markup=markup)
                         user_states[chat_id]['stop_pars_small_oil'] = True
                         break
             except aiogram.exceptions.TelegramBadRequest as e:
@@ -347,7 +346,7 @@ async def check_products_big_balzam(message: Message):
                         # await message.answer(f'balzam test 150')
                         pass
                     else:
-                        await message.answer(f'Состояние товаров:\n\n{availability_4}\nэто Смарт Паста 150мл: {url_4}', reply_markup=markup)
+                        await message.answer(f'Состояние товаров:\n\n{availability_4}\nэто Бальзам 150мл: {url_4}', reply_markup=markup)
                         user_states[chat_id]['stop_pars_big_balzam'] = True
                         break
             except aiogram.exceptions.TelegramBadRequest as e:
